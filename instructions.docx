@@ -1,0 +1,106 @@
+Lab Instructions: RDS Snapshot Replication  Across AWS Regions 
+Objective 
+By the end of this lab, you will: 
+• Create an Amazon RDS Snapshot 
+• Copy the snapshot to another AWS region 
+• Restore the snapshot to create a replica database 
+Prerequisites 
+Before starting, ensure that you have: 
+• An AWS account with permissions for RDS, IAM, and S3 
+• An existing RDS instance (e.g., MySQL, PostgreSQL, or MariaDB) • AWS CLI installed (optional but useful for automation) 
+Step 1: Create an RDS Manual Snapshot 
+1. Log in to the AWS Management Console 
+2. Go to Amazon RDS 
+3. Select your RDS instance 
+4. Click Actions → Take Snapshot 
+5. Enter a Snapshot Name (e.g., rds-prod-snapshot) 
+6. Click Create Snapshot 
+7. Wait for the snapshot status to change to "Available" 
+Step 2: Copy the Snapshot to Another AWS Region Using AWS Console 
+1. In the RDS Console, navigate to Snapshots 
+2. Select the snapshot you created 
+3. Click Actions → Copy Snapshot
+4. In the Copy Snapshot screen:  
+o Destination Region: Select the target AWS region 
+o Snapshot Name: Keep the default or enter a custom name 
+o Encryption: Enable if needed (required for cross-region encrypted RDS  instances) 
+5. Click Copy Snapshot 
+6. Wait until the status changes to "Available" in the destination region Using AWS CLI 
+Alternatively, run the following command: 
+aws rds copy-db-snapshot \ 
+ --source-db-snapshot-identifier arn:aws:rds:us-east 1:123456789012:snapshot:rds-prod-snapshot \ 
+ --target-db-snapshot-identifier rds-prod-snapshot-copy \  --source-region us-east-1 \ 
+ --destination-region us-west-2 
+Replace ARN, regions, and snapshot name accordingly. 
+Step 3: Restore the Snapshot in the Target Region 
+1. Switch to the Target AWS Region in the AWS Console 
+2. Go to RDS → Snapshots 
+3. Find the copied snapshot 
+4. Click Actions → Restore Snapshot 
+5. Configure the restored database:  
+o DB Instance Identifier: rds-replica-instance 
+o Instance Type: Choose an appropriate size 
+o VPC & Security Groups: Ensure correct settings 
+6. Click Restore DB Instance 
+7. Wait for the status to change to "Available" 
+Using AWS CLI 
+aws rds restore-db-instance-from-db-snapshot \ 
+ --db-instance-identifier rds-replica-instance \ 
+ --db-snapshot-identifier rds-prod-snapshot-copy \  --region us-west-2 
+Step 4: Verify the Replicated Database 
+1. In the AWS RDS Console, check the Instances list
+2. Find the new restored instance 
+3. Click on it and note down:  
+o Endpoint 
+o Port 
+4. Connect using MySQL/PostgreSQL CLI (adjust per DB engine):  5. mysql -h <endpoint> -u admin -p 
+6. psql -h <endpoint> -U admin -d mydb 
+Step 5: Optional - Automate Future Snapshots &  Replications 
+Enable Automated Snapshots 
+1. Go to RDS → Select your instance 
+2. Click Modify 
+3. In the Backup section, set:  
+o Backup Retention Period (e.g., 7 days) 
+o Backup Window (for minimal impact) 
+4. Click Save Changes 
+Automate Snapshot Copying with AWS Lambda 
+Use a Lambda function to copy snapshots automatically across regions. 
+1. Go to AWS Lambda → Create Function 
+2. Select Author from Scratch 
+3. Choose Python 3.9 and assign RDS and S3 access permissions 4. Replace the function code with:  
+5. import boto3 
+6. 
+7. source_region = 'us-east-1' 
+8. destination_region = 'us-west-2' 
+9. snapshot_name = 'rds-auto-snapshot' 
+10. copy_name = 'rds-auto-copy' 
+11. 
+12. rds = boto3.client('rds', region_name=source_region) 13. 
+14. def lambda_handler(event, context): 
+15. response = rds.create_db_snapshot( 
+16. DBInstanceIdentifier='your-rds-instance', 17. DBSnapshotIdentifier=snapshot_name 
+18. ) 
+19.  
+20. print("Snapshot created:", response) 
+21. 
+22. copy_response = rds.copy_db_snapshot(
+23.  
+SourceDBSnapshotIdentifier=f'arn:aws:rds:{source_region}:123456789012:s napshot/{snapshot_name}', 
+24. TargetDBSnapshotIdentifier=copy_name, 
+25. SourceRegion=source_region, 
+26. DestinationRegion=destination_region 
+27. ) 
+28.  
+29. print("Snapshot copied:", copy_response) 
+30. Set a CloudWatch Event Rule to trigger the Lambda function daily. 
+Step 6: Cleanup  
+If you want to remove the replica: 
+aws rds delete-db-instance --db-instance-identifier rds-replica-instance -- skip-final-snapshot 
+If you want to delete snapshots: 
+aws rds delete-db-snapshot --db-snapshot-identifier rds-prod-snapshot-copy N.B Ensure you clean up your lambda function is you set one up. 
+Conclusion 
+ Created an RDS snapshot 
+ Copied the snapshot across AWS regions 
+ Restored the snapshot into a new RDS instance 
+ Verified the replicated database 
+ (Optional) Automated snapshot replication
