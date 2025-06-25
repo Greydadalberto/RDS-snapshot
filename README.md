@@ -112,7 +112,7 @@ Copy snapshot to us-east-1.
 Check CloudWatch Logs for detailed output.
 
 6️ Verify Snapshot in Destination Region
-Switch AWS Console to us-east-1 region.
+Switch AWS Console to eu-central-1 region.
 
 Go to RDS → Snapshots.
 
