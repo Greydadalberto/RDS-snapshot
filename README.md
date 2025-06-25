@@ -27,7 +27,7 @@ CloudWatch Logs ---> 	To log Lambda activity
 RDS Snapshot Automation Architecture (Simple Diagram)
 +---------------------+             +---------------------+             +--------------------+
 |                     |  Snapshot   |                     |  Copy       |                    |
-|  RDS Instance       +-----------> | RDS Manual Snapshot +-----------> | RDS Snapshot (us-east-1) |
+|  RDS Instance       +-----------> | RDS Manual Snapshot +-----------> | RDS Snapshot (eu-central-1) |
 |  (eshop, eu-west-1) |             |  (eshop-snapshot)   |             | (Copied Snapshot)   |
 +---------------------+             +---------------------+             +--------------------+
            |                                                                           |
@@ -107,7 +107,7 @@ If RDS instance = available, Lambda will:
 
 Create snapshot.
 
-Copy snapshot to us-east-1.
+Copy snapshot to eu-central-1.
 
 Check CloudWatch Logs for detailed output.
 
