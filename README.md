@@ -126,6 +126,45 @@ Conclusion
 
 
 
+Connect to the Replicated RDS Instance using MySQL
+
+After the snapshot was restored into a new RDS instance in the Frankfurt region (eu-central-1), follow these steps to connect to it using the MySQL client.
+
+Step 1: Ensure MySQL Client is Installed
+Check if MySQL is installed:
+mysql --version
+
+If it’s not installed, install it using your OS's package manager:
+
+Ubuntu/Debian:
+sudo apt update
+sudo apt install mysql-client
+
+Step 2: Confirm Your Database Endpoint
+From the AWS Console → RDS → Databases → your restored DB (eshop-replica), copy the endpoint and port. Example:
+pgsql
+Endpoint: eshop-replica.cn60o6mcyatg.eu-central-1.rds.amazonaws.com  
+Port: 3306
+
+Step 3: Open Database Port in the Security Group
+Ensure the inbound rules of the RDS security group allow traffic on port 3306 from your IP or 0.0.0.0/0 if for testing:
+Type:       MYSQL/Aurora  
+Protocol:   TCP  
+Port:       3306  
+Source:     Your IP / 0.0.0.0/0 (not recommended for production)
+
+Step 4: Connect to the Database
+Use the admin username (or any other DB user you configured):
+mysql -h eshop-replica.cn60o6mcyatg.eu-central-1.rds.amazonaws.com -P 3306 -u admin -p
+Enter the password when prompted. If forgotten, reset it in the RDS Console under Modify → Master password.
 
 
+Step 5: Run Test Queries
+Once connected, verify the database contents:
+sql
+SHOW DATABASES;
+USE your_database_name;
+SHOW TABLES;
+SELECT * FROM some_table LIMIT 5;
 
+confirm Verification of the replicated database
